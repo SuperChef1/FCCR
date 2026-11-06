@@ -1,0 +1,71 @@
+NAME: 'LAM_auto_f3c_1_start50_resnet18'
+OUTPUT_DIR: './output/LAM_Dataset_Delete'
+SHOW_STEP: 100
+SAVE_STEP: 5
+VALID_STEP: 1
+INPUT_SIZE: (32, 32)
+COLOR_SPACE: 'RGB'
+
+Auto_F3C:
+  WORK: True
+  C_TYPE: 'edc'
+  START_EPOCH: 1
+  GAMMA: 0.1
+  INIT_SHIFT: 1.0
+  CLAMP: [0.85, 1.15]
+  USE_PREV_EPOCH_CENTER: True
+  USE_EMA_CENTER: True
+  CENTER_MOMENTUM: 0.9
+  NORM_DELTA: True
+  DELTA_COEF: 1.0
+  DIST_BETA: 0.0
+
+DATASET:
+  DATASET: 'LAMDataset_LT'
+
+BACKBONE:
+  TYPE: 'resnet18_backbone'
+
+MODULE:
+  TYPE: 'Identity'
+
+CLASSIFIER:
+  TYPE: 'FC'
+  BIAS: True
+
+LOSS:
+  LOSS_TYPE: 'CrossEntropy'
+
+TRAIN:
+  BATCH_SIZE: 128
+  MAX_EPOCH: 200
+  NUM_WORKERS: 1
+  COMBINER:
+    TYPE: 'auto_f3c'
+  OPTIMIZER:
+    TYPE: 'SGD'
+    BASE_LR: 0.01
+    MOMENTUM: 0.9
+    WEIGHT_DECAY: 2e-4
+  LR_SCHEDULER:
+    TYPE: 'warmup'
+    LR_STEP: [160, 180]
+    LR_FACTOR: 0.01
+    WARM_EPOCH: 5
+  TENSORBOARD:
+    ENABLE: True
+  SAMPLER:
+    TYPE: 'default'
+
+  DISTRIBUTED: False
+  SYNCBN: True
+
+TRANSFORMS:
+  TRAIN_TRANSFORMS: ()
+  TEST_TRANSFORMS: ()
+
+TEST:
+  BATCH_SIZE: 64
+  NUM_WORKERS: 8
+  MODEL_FILE: 'best_model.pth'
+
