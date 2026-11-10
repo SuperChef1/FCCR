@@ -1,5 +1,6 @@
 import _init_paths
 from dataset.lam_dataset import LAMDataset
+from dataset.lam_dataset_bbn import LAMDatasetBBN
 from dataset.lam_dataset_balance import LAMDataset_balanced
 from dataset.lam_dataset_LT import LAMDataset_LT
 from loss import *
@@ -14,6 +15,7 @@ from utils.utils import (
 )
 from core.function import train_model, valid_model
 from core.combiner import Combiner
+from core.bbn_combiner import BBNCombiner
 from utils.repro import setup_repro, make_seeded_loader
 import torch
 torch.use_deterministic_algorithms(True, warn_only=True)
@@ -182,7 +184,10 @@ if __name__ == "__main__":
 
     # ----- BEGIN MODEL BUILDER -----
     model = get_model(cfg, num_classes, device, logger)
-    combiner = Combiner(cfg, device, num_class_list)
+    if str(getattr(cfg.NETWORK, "TYPE", "standard")).lower() == "bbn":
+        combiner = BBNCombiner(cfg, device, num_class_list)
+    else:
+        combiner = Combiner(cfg, device, num_class_list)
     optimizer = get_optimizer(cfg, model)
     scheduler = get_scheduler(cfg, optimizer)
 

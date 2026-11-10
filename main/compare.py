@@ -8,12 +8,13 @@ from sklearn.metrics import precision_recall_fscore_support
 from types import SimpleNamespace
 
 from config import cfg as default_cfg  # 默认 config 节点
-from net import Network
+from net import build_network
 from utils.repro import setup_repro, make_seeded_loader
 from utils.utils import valid_logger, get_category_list
 
 # 你的数据集工厂
 from dataset.lam_dataset import LAMDataset
+from dataset.lam_dataset_bbn import LAMDatasetBBN
 from dataset.lam_dataset_balance import LAMDataset_balanced
 from dataset.lam_dataset_LT import LAMDataset_LT
 
@@ -53,7 +54,7 @@ def infer_one_cfg(model_cfg, device, valid_set):
     返回 preds [N], labels [N], image_ids [N]
     """
     num_classes = valid_set.get_num_classes()
-    model = Network(model_cfg, mode="test", num_classes=num_classes)
+    model = build_network(model_cfg, mode="test", num_classes=num_classes)
 
     # 模型路径：OUTPUT_DIR / NAME / models / TEST.MODEL_FILE
     model_file = os.path.join(

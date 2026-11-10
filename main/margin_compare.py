@@ -7,12 +7,13 @@ from tqdm import tqdm
 from sklearn.metrics import precision_recall_fscore_support
 
 from config import cfg as default_cfg  # 默认 config 节点
-from net import Network
+from net import build_network
 from utils.repro import setup_repro, make_seeded_loader
 from utils.utils import valid_logger, get_category_list
 
 # 你的数据集工厂（保持原脚本一致；cfg 里选 LAMDataset 就只会用到它）
 from dataset.lam_dataset import LAMDataset
+from dataset.lam_dataset_bbn import LAMDatasetBBN
 from dataset.lam_dataset_balance import LAMDataset_balanced
 from dataset.lam_dataset_LT import LAMDataset_LT
 
@@ -52,7 +53,7 @@ def infer_one_cfg(model_cfg, device, valid_set):
     返回 preds [N], labels [N], image_ids [N]
     """
     num_classes = valid_set.get_num_classes()
-    model = Network(model_cfg, mode="test", num_classes=num_classes)
+    model = build_network(model_cfg, mode="test", num_classes=num_classes)
 
     model_file = os.path.join(
         model_cfg.OUTPUT_DIR, model_cfg.NAME, "models", model_cfg.TEST.MODEL_FILE
@@ -105,7 +106,7 @@ def eval_margin_stats(cfg_node, device, valid_set, eps_list=(0.0, 0.2, 0.5)):
     返回：mean_margin, near_boundary_ratios(|m|<=eps), per_class_rows
     """
     num_classes = valid_set.get_num_classes()
-    model = Network(cfg_node, mode="test", num_classes=num_classes)
+    model = build_network(cfg_node, mode="test", num_classes=num_classes)
     model.load_model(
         os.path.join(cfg_node.OUTPUT_DIR, cfg_node.NAME, "models", cfg_node.TEST.MODEL_FILE),
         tau_norm=bool(getattr(cfg_node.TEST.TAU_NORM, "USE_TAU_NORM", False))
@@ -175,7 +176,7 @@ def eval_tail_logit_margin_stats(cfg_node, device, valid_set, tail_cls=2, hist_b
       count/mean/std/min/p05/p25/p50/p75/p95/max + hist_edges/hist_counts
     """
     num_classes = valid_set.get_num_classes()
-    model = Network(cfg_node, mode="test", num_classes=num_classes)
+    model = build_network(cfg_node, mode="test", num_classes=num_classes)
     model.load_model(
         os.path.join(cfg_node.OUTPUT_DIR, cfg_node.NAME, "models", cfg_node.TEST.MODEL_FILE),
         tau_norm=bool(getattr(cfg_node.TEST.TAU_NORM, "USE_TAU_NORM", False))
@@ -246,7 +247,7 @@ def eval_tail_logit_margin_stats(cfg_node, device, valid_set, tail_cls=2, hist_b
 def _collect_logits_labels(cfg_node, device, valid_set):
     """收集整份验证集的 logits/labels，供温度标定与概率-margin计算"""
     num_classes = valid_set.get_num_classes()
-    model = Network(cfg_node, mode="test", num_classes=num_classes)
+    model = build_network(cfg_node, mode="test", num_classes=num_classes)
     model.load_model(
         os.path.join(cfg_node.OUTPUT_DIR, cfg_node.NAME, "models", cfg_node.TEST.MODEL_FILE),
         tau_norm=bool(getattr(cfg_node.TEST.TAU_NORM, "USE_TAU_NORM", False)) if hasattr(cfg_node.TEST, "TAU_NORM") else False,

@@ -4,7 +4,7 @@ import os
 
 import torch
 from utils.lr_scheduler import WarmupMultiStepLR
-from net import Network
+from net import build_network
 try:
     from apex.parallel import DistributedDataParallel as DDP
     from apex.fp16_utils import *
@@ -146,7 +146,7 @@ def get_scheduler(cfg, optimizer):
 
 
 def get_model(cfg, num_classes, device, logger):
-    model = Network(cfg, mode="train", num_classes=num_classes)
+    model = build_network(cfg, mode="train", num_classes=num_classes)
 
     if cfg.BACKBONE.FREEZE == True:
         model.freeze_backbone()

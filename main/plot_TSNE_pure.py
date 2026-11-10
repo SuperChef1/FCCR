@@ -8,7 +8,7 @@ import _init_paths  # 你的工程路径注入
 
 from copy import deepcopy
 from config import cfg as _cfg, update_config
-from net import Network
+from net import build_network
 
 # ---- 兼容导入：你的工程里可能是 utils.repro，也可能是 repro.py ----
 try:
@@ -18,6 +18,7 @@ except Exception:
 
 # ---- dataset：按你现有习惯直接 import（不要 eval），避免 __init__.py 未导出 LAMDataset 的坑 ----
 from dataset.lam_dataset import LAMDataset
+from dataset.lam_dataset_bbn import LAMDatasetBBN
 from dataset.lam_dataset_balance import LAMDataset_balanced
 from dataset.lam_dataset_LT import LAMDataset_LT
 
@@ -97,7 +98,7 @@ def extract_feat_logits(cfg_node, x_cpu, y_cpu, num_classes, mode_tag: str):
     """
     device = _get_device()
 
-    model = Network(cfg_node, mode="test", num_classes=num_classes)
+    model = build_network(cfg_node, mode="test", num_classes=num_classes)
     model_file = os.path.join(cfg_node.OUTPUT_DIR, cfg_node.NAME, "models", cfg_node.TEST.MODEL_FILE)
     model.load_model(model_file, tau_norm=False, tau=1.0)
 

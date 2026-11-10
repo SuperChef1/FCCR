@@ -1,4 +1,5 @@
 import os
+import random
 import numpy as np
 import torch
 from torch.utils.data import Dataset
@@ -104,6 +105,31 @@ class LAMDataset(Dataset):
         self.cls_num = int(np.unique(self.label.numpy()).size)
         self.class_dict = self._get_class_dict()
         self.pos_indices = final_pos
+
+        # Square-root sampling is enabled only for the training split and only
+        # when explicitly requested by the YAML configuration. Other LAM
+        # experiments retain their original index-based sampling behavior.
+        self.sr_classes = None
+        self.square_p = None
+        if (
+            self.mode == "train"
+            and self.cfg is not None
+            and self.cfg.TRAIN.SAMPLER.TYPE == "weighted sampler"
+            and self.cfg.TRAIN.SAMPLER.WEIGHTED_SAMPLER.TYPE == "square"
+        ):
+            self.sr_classes = np.array(sorted(self.class_dict), dtype=np.int64)
+            class_counts = np.array(
+                [len(self.class_dict[int(cls)]) for cls in self.sr_classes],
+                dtype=np.float64,
+            )
+            sqrt_counts = np.sqrt(class_counts)
+            self.square_p = sqrt_counts / sqrt_counts.sum()
+            print(
+                "[SR Sampling] class counts: "
+                f"{class_counts.astype(int).tolist()}, "
+                f"class probabilities: {self.square_p.tolist()}"
+            )
+
         # 额外打印验证集是否真的“每类=val_per_class”
         if self.mode != "train":
             _, vc = np.unique(self.label.numpy(), return_counts=True)
@@ -114,6 +140,10 @@ class LAMDataset(Dataset):
         return len(self.input_data)
 
     def __getitem__(self, index):
+        if self.square_p is not None:
+            sample_class = int(np.random.choice(self.sr_classes, p=self.square_p))
+            index = random.choice(self.class_dict[sample_class])
+
         img = self.input_data[index]     # [C,H,W]
         label = int(self.label[index])
         meta = {"image_id": int(self.pos_indices[index])}

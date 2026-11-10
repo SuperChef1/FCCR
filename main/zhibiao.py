@@ -8,11 +8,12 @@ import  pandas
 import openpyxl
 import _init_paths
 from config import cfg, update_config
-from net import Network
+from net import build_network
 from utils.repro import setup_repro, make_seeded_loader
 from utils.utils import valid_logger, get_category_list
 
 from dataset.lam_dataset import LAMDataset
+from dataset.lam_dataset_bbn import LAMDatasetBBN
 from dataset.lam_dataset_balance import LAMDataset_balanced
 from dataset.lam_dataset_LT import LAMDataset_LT
 
@@ -107,7 +108,7 @@ def infer_valid(cfg_node, cfg_path=None):
     valid_set = build_dataset("valid", cfg_node)
     num_classes = valid_set.get_num_classes()
 
-    model = Network(cfg_node, mode="test", num_classes=num_classes)
+    model = build_network(cfg_node, mode="test", num_classes=num_classes)
     model_file = os.path.join(cfg_node.OUTPUT_DIR, cfg_node.NAME, "models", cfg_node.TEST.MODEL_FILE)
     model.load_model(model_file, tau_norm=False, tau=1.0)
     model = torch.nn.DataParallel(model).to(device).eval()

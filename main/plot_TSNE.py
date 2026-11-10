@@ -5,10 +5,11 @@ import numpy as np
 import torch
 import matplotlib.pyplot as plt
 from dataset.lam_dataset import LAMDataset
+from dataset.lam_dataset_bbn import LAMDatasetBBN
 
 from copy import deepcopy
 from config import cfg as _cfg, update_config
-from net import Network
+from net import build_network
 from utils.repro import setup_repro, make_seeded_loader
 
 
@@ -59,7 +60,7 @@ def extract_feature(cfg_node, x_cpu, y_cpu, num_classes, mode_tag: str):
     返回：feat [N,D] numpy, y_true [N] numpy
     """
     device = torch.device("cuda")
-    model = Network(cfg_node, mode="test", num_classes=num_classes)
+    model = build_network(cfg_node, mode="test", num_classes=num_classes)
     model_file = os.path.join(cfg_node.OUTPUT_DIR, cfg_node.NAME, "models", cfg_node.TEST.MODEL_FILE)
     model.load_model(model_file, tau_norm=False, tau=1.0)
     model = torch.nn.DataParallel(model).to(device).eval()

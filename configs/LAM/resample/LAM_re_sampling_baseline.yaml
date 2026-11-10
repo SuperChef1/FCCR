@@ -45,7 +45,7 @@ TRAIN:
   SAMPLER:
     TYPE: 'weighted sampler'
     WEIGHTED_SAMPLER:
-      TYPE: 'balance'
+      TYPE: 'square'
 
   DISTRIBUTED: False
   SYNCBN: True

@@ -1,4 +1,4 @@
-NAME: 'LAM_bbn_style_sampling'
+NAME: 'LAM_bbn'
 OUTPUT_DIR: './output/LAM_Dataset'
 SHOW_STEP: 100
 SAVE_STEP: 5
@@ -7,10 +7,13 @@ INPUT_SIZE: (32, 32)
 COLOR_SPACE: 'RGB'
 
 DATASET:
-  DATASET: 'LAMDataset'
+  DATASET: 'LAMDatasetBBN'
+
+NETWORK:
+  TYPE: 'bbn'
 
 BACKBONE:
-  TYPE: 'res32'
+  TYPE: 'bbn_res32'
   IN_CHANNELS: 150
   CIFAR_STEM: True
 
@@ -29,7 +32,7 @@ TRAIN:
   MAX_EPOCH: 200
   NUM_WORKERS: 1
   COMBINER:
-    TYPE: 'default'
+    TYPE: 'bbn'
   OPTIMIZER:
     TYPE: 'SGD'
     BASE_LR: 0.01

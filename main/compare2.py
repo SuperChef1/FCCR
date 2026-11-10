@@ -8,12 +8,13 @@ from sklearn.metrics import precision_recall_fscore_support
 from types import SimpleNamespace
 
 from config import cfg as default_cfg  # 默认 config 节点
-from net import Network
+from net import build_network
 from utils.repro import setup_repro, make_seeded_loader
 from utils.utils import valid_logger, get_category_list
 
 # 你的数据集工厂
 from dataset.lam_dataset import LAMDataset
+from dataset.lam_dataset_bbn import LAMDatasetBBN
 from dataset.lam_dataset_balance import LAMDataset_balanced
 from dataset.lam_dataset_LT import LAMDataset_LT
 
@@ -53,7 +54,7 @@ def infer_one_cfg(model_cfg, device, valid_set):
     返回 preds [N], labels [N], image_ids [N]
     """
     num_classes = valid_set.get_num_classes()
-    model = Network(model_cfg, mode="test", num_classes=num_classes)
+    model = build_network(model_cfg, mode="test", num_classes=num_classes)
 
     # 模型路径：OUTPUT_DIR / NAME / models / TEST.MODEL_FILE
     model_file = os.path.join(
@@ -102,7 +103,7 @@ def infer_one_cfg(model_cfg, device, valid_set):
 @torch.no_grad()
 def eval_margin_stats(cfg_node, device, valid_set, eps_list=(0.0, 0.2, 0.5)):
     num_classes = valid_set.get_num_classes()
-    model = Network(cfg_node, mode="test", num_classes=num_classes)
+    model = build_network(cfg_node, mode="test", num_classes=num_classes)
     model.load_model(os.path.join(cfg_node.OUTPUT_DIR, cfg_node.NAME, "models", cfg_node.TEST.MODEL_FILE),
                      tau_norm=bool(getattr(cfg_node.TEST.TAU_NORM, "USE_TAU_NORM", False))
                      if hasattr(cfg_node.TEST, "TAU_NORM") else False,
@@ -156,7 +157,7 @@ def eval_margin_stats(cfg_node, device, valid_set, eps_list=(0.0, 0.2, 0.5)):
 def _collect_logits_labels(cfg_node, device, valid_set):
     """收集整份验证集的 logits/labels，供温度标定与概率-margin计算"""
     num_classes = valid_set.get_num_classes()
-    model = Network(cfg_node, mode="test", num_classes=num_classes)
+    model = build_network(cfg_node, mode="test", num_classes=num_classes)
     model.load_model(
         os.path.join(cfg_node.OUTPUT_DIR, cfg_node.NAME, "models", cfg_node.TEST.MODEL_FILE),
         tau_norm=bool(getattr(cfg_node.TEST.TAU_NORM, "USE_TAU_NORM", False)) if hasattr(cfg_node.TEST, "TAU_NORM") else False,

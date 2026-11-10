@@ -7,11 +7,12 @@ import torch.nn.functional as F
 import _init_paths  # 确保工程根路径加入 sys.path
 
 from config import cfg as default_cfg
-from net import Network
+from net import build_network
 from utils.repro import setup_repro, make_seeded_loader
 
 # 只保留你目前会用到的 LAMDataset
 from dataset.lam_dataset import LAMDataset
+from dataset.lam_dataset_bbn import LAMDatasetBBN
 
 
 # ----------------------------
@@ -64,7 +65,7 @@ def collect_logits_labels(cfg_node, device, valid_set, seed=111):
     跑一遍验证集，收集 logits 和 labels（整集），用于温度标定 + margin 统计。
     """
     num_classes = valid_set.get_num_classes()
-    model = Network(cfg_node, mode="test", num_classes=num_classes)
+    model = build_network(cfg_node, mode="test", num_classes=num_classes)
 
     ckpt_path = _get_model_ckpt_path(cfg_node)
     model.load_model(

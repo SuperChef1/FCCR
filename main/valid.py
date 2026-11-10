@@ -1,9 +1,10 @@
 import random
 
 import _init_paths
-from net import Network
+from net import build_network
 from config import cfg, update_config
 from dataset.lam_dataset import LAMDataset
+from dataset.lam_dataset_bbn import LAMDatasetBBN
 from dataset.lam_dataset_balance import LAMDataset_balanced
 from dataset.lam_dataset_LT import LAMDataset_LT
 import numpy as np
@@ -187,7 +188,7 @@ if __name__ == "__main__":
     test_set = eval(cfg.DATASET.DATASET)("valid", cfg)
     num_classes = test_set.get_num_classes()
     device = torch.device("cuda")
-    model = Network(cfg, mode="test", num_classes=num_classes)
+    model = build_network(cfg, mode="test", num_classes=num_classes)
 
     model_file = os.path.join(cfg.OUTPUT_DIR, cfg.NAME, 'models', cfg.TEST.MODEL_FILE)
     model.load_model(model_file, tau_norm=False, tau=1.0)

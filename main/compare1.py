@@ -9,12 +9,13 @@ from sklearn.metrics import precision_recall_fscore_support
 from types import SimpleNamespace
 
 from config import cfg as default_cfg  # 默认 config 节点
-from net import Network
+from net import build_network
 from utils.repro import setup_repro, make_seeded_loader
 from utils.utils import valid_logger, get_category_list
 
 # 你的数据集工厂
 from dataset.lam_dataset import LAMDataset
+from dataset.lam_dataset_bbn import LAMDatasetBBN
 from dataset.lam_dataset_balance import LAMDataset_balanced
 from dataset.lam_dataset_LT import LAMDataset_LT
 
@@ -54,7 +55,7 @@ def infer_one_cfg(model_cfg, device, valid_set):
     返回 preds [N], labels [N], image_ids [N]
     """
     num_classes = valid_set.get_num_classes()
-    model = Network(model_cfg, mode="test", num_classes=num_classes)
+    model = build_network(model_cfg, mode="test", num_classes=num_classes)
 
     # 模型路径：OUTPUT_DIR / NAME / models / TEST.MODEL_FILE
     model_file = os.path.join(
@@ -400,7 +401,7 @@ def main():
     tau_vec_fccr = build_tau_vector(num_classes, counts_train, gamma=args.gamma, start_from_1=True)
 
     # 对 FCC 模型做 mis-area 诊断
-    model_fcc = Network(cfg_fcc, mode="test", num_classes=num_classes)  # 先建 Network
+    model_fcc = build_network(cfg_fcc, mode="test", num_classes=num_classes)
     model_fcc.load_model(
         os.path.join(cfg_fcc.OUTPUT_DIR, cfg_fcc.NAME, "models", cfg_fcc.TEST.MODEL_FILE),
         tau_norm=bool(getattr(cfg_fcc.TEST.TAU_NORM, "USE_TAU_NORM", False)) if hasattr(cfg_fcc.TEST,
@@ -415,7 +416,7 @@ def main():
     )
 
     # --- FCCR ---
-    model_fccr = Network(cfg_fccr, mode="test", num_classes=num_classes)
+    model_fccr = build_network(cfg_fccr, mode="test", num_classes=num_classes)
     model_fccr.load_model(
         os.path.join(cfg_fccr.OUTPUT_DIR, cfg_fccr.NAME, "models", cfg_fccr.TEST.MODEL_FILE),
         tau_norm=bool(getattr(cfg_fccr.TEST.TAU_NORM, "USE_TAU_NORM", False)) if hasattr(cfg_fccr.TEST,
